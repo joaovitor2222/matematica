@@ -233,6 +233,19 @@ let mediumCleared = localStorage.getItem('mediumCleared') === 'true';
 let hardCleared = localStorage.getItem('hardCleared') === 'true';
   let zerado = false; // essa será a variável principal
   let freeHints = 0;
+  // Se o jogador tiver adubo suficiente, dá uma dica grátis
+const adubo = parseInt(localStorage.getItem('adubo') || '0');
+if (adubo >= 5) {
+  freeHints++;
+}
+
+// Se tiver dicas, exibe o botão de usar dica
+if (freeHints > 0) {
+  const hintBtn = document.getElementById('hint-button');
+  hintBtn.classList.remove('hidden');
+  hintBtn.addEventListener('click', useHint);
+}
+
 
 
 
@@ -268,6 +281,9 @@ let hardCleared = localStorage.getItem('hardCleared') === 'true';
 
   diffScreen.classList.add('hidden');
   gameScreen.classList.remove('hidden');
+  if (freeHints > 0) {
+  document.getElementById('hint-button').classList.remove('hidden');
+}
   generateQuestion();
 }
 
@@ -280,15 +296,37 @@ function formatTime(sec) {
 }
 
 function restartGame() {
-  // Sistema de dica bônus
-  const adubo = parseInt(localStorage.getItem('adubo') || '0');
-  if (adubo >= 5) {
-    freeHints++;
-    alert('🎁 Você ganhou 1 dica grátis por jogar o jogo da fazenda!');
-  }
-
   location.reload(); // Recarrega a página
 }
+
+function useHint() {
+  if (freeHints <= 0) return;
+
+  const choiceButtons = document.querySelectorAll('.choices button');
+  let wrongButtons = [];
+
+  choiceButtons.forEach(btn => {
+    if (parseInt(btn.textContent) !== currentCorrectAnswer) {
+      wrongButtons.push(btn);
+    }
+  });
+
+  // Embaralha para não remover sempre os mesmos
+  wrongButtons.sort(() => Math.random() - 0.5);
+
+  // Remove até 2 respostas erradas
+  for (let i = 0; i < Math.min(2, wrongButtons.length); i++) {
+    wrongButtons[i].remove();
+  }
+
+  freeHints--;
+
+  if (freeHints <= 0) {
+    document.getElementById('hint-button').classList.add('hidden');
+  }
+}
+
+
 
 
 // inicia o timer para cada pergunta
@@ -366,6 +404,7 @@ function showBuildButton() {
   // Gera expressão
   const expr = makeExpression(ops, difficulty);
   const correct = Math.round(eval(expr)); // força resposta inteira
+  currentCorrectAnswer = correct; // <<< esta linha
   // Gera alternativas: sempre inclui a certa + fakes
   const choices = makeChoices(correct, numChoices, difficulty);
 
@@ -468,6 +507,7 @@ if (difficulty === 'hard') {
     }, 3000);
   }
 }
+
 })();
 </script>
 </body>
