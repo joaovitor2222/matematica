@@ -158,6 +158,38 @@ body {
 }
 
 
+#difficulty-indicator {
+  position: fixed;
+  bottom: 30px; /* Distância de 30px do fundo da tela */
+  left: 50%;
+  transform: translateX(-50%); /* Centraliza horizontalmente */
+  display: flex;
+  justify-content: space-around;
+  width: 300px; /* Largura para comportar as 3 bolinhas */
+  z-index: 1000;
+}
+
+.difficulty-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ball {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: red; /* Inicialmente vermelha */
+  margin-right: 10px;
+}
+
+.difficulty-item p {
+  margin: 0;
+  color: #fff;
+  font-size: 1em;
+}
+
+
   </style>
 </head>
 <body>
@@ -213,6 +245,21 @@ Ver vídeo de vitória!
 </p>
 
 
+<!-- Indicador de progresso das dificuldades -->
+<div id="difficulty-indicator">
+  <div class="difficulty-item">
+    <div class="ball" id="easy-ball"></div>
+    <p>Fácil</p>
+  </div>
+  <div class="difficulty-item">
+    <div class="ball" id="medium-ball"></div>
+    <p>Médio</p>
+  </div>
+  <div class="difficulty-item">
+    <div class="ball" id="hard-ball"></div>
+    <p>Difícil</p>
+  </div>
+</div>
 
 
 
@@ -250,7 +297,8 @@ if (freeHints > 0) {
   hintBtn.addEventListener('click', useHint);
 }
 
-
+// Chame essa função quando o jogo for iniciado ou quando a vitória for alcançada
+updateDifficultyIndicator();
 
 
   // Timeout de 15s para escolher, senão médio
@@ -290,6 +338,26 @@ if (freeHints > 0) {
 }
   generateQuestion();
 }
+
+function updateDifficultyIndicator() {
+  const easyBall = document.getElementById('easy-ball');
+  const mediumBall = document.getElementById('medium-ball');
+  const hardBall = document.getElementById('hard-ball');
+
+  // Verifica no localStorage se a dificuldade foi completada e altera a cor das bolinhas
+  if (localStorage.getItem('easyCleared') === 'true') {
+    easyBall.style.backgroundColor = 'blue';  // Azul para a dificuldade completada
+  }
+
+  if (localStorage.getItem('mediumCleared') === 'true') {
+    mediumBall.style.backgroundColor = 'blue';  // Azul para a dificuldade completada
+  }
+
+  if (localStorage.getItem('hardCleared') === 'true') {
+    hardBall.style.backgroundColor = 'blue';  // Azul para a dificuldade completada
+  }
+}
+
 
 
   // converte segundos num formato MM:SS
