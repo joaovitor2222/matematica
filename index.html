@@ -164,7 +164,7 @@ body {
   left: 50%;
   transform: translateX(-50%); /* Centraliza horizontalmente */
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-start; /* Alinha as bolinhas à esquerda dentro do contêiner */
   width: 300px; /* Largura para comportar as 3 bolinhas */
   z-index: 1000;
 }
@@ -173,6 +173,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 10px; /* Espaço entre as bolinhas */
 }
 
 .ball {
@@ -180,7 +181,7 @@ body {
   height: 20px;
   border-radius: 50%;
   background-color: red; /* Inicialmente vermelha */
-  margin-right: 10px;
+  margin-right: 10px; /* Espaço entre a bolinha e o texto */
 }
 
 .difficulty-item p {
