@@ -160,20 +160,20 @@ body {
 
 #difficulty-indicator {
   position: fixed;
-  bottom: 30px; /* Distância de 30px do fundo da tela */
-  left: 50%;
-  transform: translateX(-50%); /* Centraliza horizontalmente */
+  top: 50%; /* Posiciona no centro vertical da tela */
+  left: 30px; /* Alinha à esquerda com um espaçamento de 30px */
+  transform: translateY(-50%); /* Ajusta para garantir que fique no centro exato */
   display: flex;
-  justify-content: flex-start; /* Alinha as bolinhas à esquerda dentro do contêiner */
-  width: 300px; /* Largura para comportar as 3 bolinhas */
+  flex-direction: column; /* Organiza as bolinhas em uma coluna */
+  align-items: flex-start; /* Alinha as bolinhas à esquerda */
   z-index: 1000;
 }
 
 .difficulty-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-right: 10px; /* Espaço entre as bolinhas */
+  justify-content: flex-start; /* Garante que o conteúdo do item fique alinhado à esquerda */
+  margin-bottom: 10px; /* Espaço entre as bolinhas */
 }
 
 .ball {
@@ -189,6 +189,7 @@ body {
   color: #fff;
   font-size: 1em;
 }
+
 
 
 
