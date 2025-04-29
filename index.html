@@ -138,11 +138,11 @@ body {
 }
 
 #hint-button {
-  /* Sem display: none! */
-  position: absolute;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
+  display: none;
+  position: fixed;
+  bottom: 20px; /* Distância de 20px do fundo da tela */
+  left: 50%; /* Centraliza horizontalmente */
+  transform: translateX(-50%); /* Ajuste fino para ficar exatamente no meio */
   padding: 15px 30px;
   font-size: 1.2em;
   background-color: #28a745; /* verde */
@@ -152,6 +152,7 @@ body {
   cursor: pointer;
   z-index: 1000;
 }
+
 
 #hint-button:hover {
   background-color: #218838;
