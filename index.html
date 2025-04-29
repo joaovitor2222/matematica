@@ -133,6 +133,26 @@ body {
   opacity: 0.8;
 }
 
+    #hint-button {
+  display: none;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 30px;
+  font-size: 1.2em;
+  background-color: #28a745; /* verde */
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+#hint-button:hover {
+  background-color: #218838;
+}
+
 
   </style>
 </head>
@@ -168,6 +188,7 @@ body {
   </div>
   
   <button id="restart-button" onclick="restartGame()">Jogar Novamente</button>
+    <button id="hint-button" class="hidden">Usar Dica</button>
   <!-- Botão de vídeo: inicialmente oculto -->
 <a id="video-button" 
 href="https://www.youtube.com/watch?v=vaxIVROYg74" 
@@ -186,6 +207,9 @@ Ver vídeo de vitória!
   + é soma, - é subtração, <br>
   * é multiplicação e / é divisão.
 </p>
+
+
+
 
 
 
