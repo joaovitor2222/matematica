@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Math Horror Game — Personalizado</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #111;
+      color: #eee;
+      padding: 20px;
+    }
+    h1, h2 { margin-bottom: 0.5em; }
+    label { display: block; margin: 10px 0 5px; }
+    input[type="text"], input[type="number"], select {
+      width: 80%;
+      padding: 8px;
+      font-size: 1em;
+      border-radius: 4px;
+      border: 1px solid #444;
+      background: #222;
+      color: #eee;
+      margin-bottom: 5px;
+    }
+    #questions-list {
+      margin: 20px 0;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #444;
+      padding: 10px;
+    }
+    #questions-list div {
+      margin-bottom: 8px;
+      padding: 6px;
+      background: #222;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #questions-list div button {
+      background: #ff3b3b;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 4px 8px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #007bff;
+      color: #fff;
+      transition: background 0.2s;
+    }
+    button:hover { background: #0056b3; }
+
+    /* ESTILOS DO JOGO EMBUTIDO */
+    #game-personalizado { margin-top: 40px; }
+    #game-personalizado.hidden { display: none; }
+    #question { margin: 20px 0; font-size: 1.4em; }
+    .choices button { margin: 5px; padding: 8px 16px; font-size: 1em; }
+    #timer-display { font-size: 1.1em; color: #f55; margin-bottom: 10px; }
+    #restart-button { display: none; margin-top: 20px; background: #ff3b3b; }
+    #restart-button:hover { background: #e60000; }
+
+    #home-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: #007bff;
+  padding: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  opacity: 0.8;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+#home-button img {
+  width: 40px;
+  height: 40px;
+}
+
+#home-button:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+#home-button.hidden {
+  display: none;
+}
+
+
+
+
+  </style>
+</head>
+<body>
+
+  <h1>Modo Personalizado</h1>
+
+  <!-- PAINEL DE CONFIGURAÇÃO -->
+  <label for="difficulty">Dificuldade:</label>
+  <select id="difficulty">
+    <option value="easy">Fácil</option>
+    <option value="medium">Médio</option>
+    <option value="hard">Difícil</option>
+    <option value="impossible">Impossível</option>
+  </select>
+
+  <label for="max-q">Máximo de perguntas:</label>
+  <input type="number" id="max-q" value="10" min="1" max="50" />
+
+  <h2>Adicionar pergunta</h2>
+  <label for="new-expr">Expressão (ex: 3+5*2):</label>
+  <input type="text" id="new-expr" placeholder="Digite a expressão" />
+
+  <label for="new-answer">Resposta correta:</label>
+  <input type="number" id="new-answer" placeholder="Número" />
+
+  <button id="add-question">➕ Adicionar</button>
+
+  <h2>Perguntas atuais</h2>
+  <div id="questions-list"></div>
+
+  <button id="start-custom">▶️ Iniciar jogo personalizado</button>
+
+  <!-- JOGO RODANDO ABAIXO -->
+  <div id="game-personalizado" class="hidden">
+    <div id="timer-display">Tempo restante: <span id="time">00:00</span></div>
+    <div id="question"></div>
+    <div class="choices"></div>
+    <button id="restart-button" style="display:none; margin-top:20px;" onclick="location.reload()">
+      Jogar Novamente
+    </button>
+  </div>
+
+  <!-- Botão de voltar ao índice -->
+<a id="home-button" href="index.html" title="Voltar ao menu">
+    <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Home">
+  </a>
+  
+
+<script>
+(() => {
+
+  // Estado do painel
+  const questions = [];
+  const listEl = document.getElementById('questions-list');
+  const exprInput = document.getElementById('new-expr');
+  const ansInput  = document.getElementById('new-answer');
+  const diffSel   = document.getElementById('difficulty');
+  const maxQInput = document.getElementById('max-q');
+
+  // Renderizar lista de perguntas
+  function renderList() {
+    listEl.innerHTML = '';
+    questions.forEach((q,i) => {
+      const div = document.createElement('div');
+      div.textContent = `${i+1}. ${q.expr} = ${q.answer}`;
+      const rm = document.createElement('button');
+      rm.textContent = '❌';
+      rm.onclick = () => {
+        questions.splice(i,1);
+        renderList();
+      };
+      div.appendChild(rm);
+      listEl.appendChild(div);
+    });
+  }
+
+  // Adicionar pergunta
+  document.getElementById('add-question').onclick = () => {
+    const expr = exprInput.value.trim();
+    const ans  = ansInput.value.trim();
+    if (!expr || ans === '') {
+      alert('Preencha expressão e resposta!');
+      return;
+    }
+    questions.push({ expr, answer: Number(ans) });
+    exprInput.value = '';
+    ansInput.value = '';
+    renderList();
+  };
+
+  // Variáveis do jogo
+  let cfg, questionCount, timerInterval, timerTimeout;
+
+  // Iniciar jogo custom
+  document.getElementById('start-custom').onclick = () => {
+    if (questions.length === 0) {
+      alert('Adicione ao menos uma pergunta!');
+      return;
+    }
+    const mq = parseInt(maxQInput.value);
+    if (isNaN(mq) || mq < 1) {
+      alert('Número de perguntas inválido!');
+      return;
+    }
+
+    // 1️⃣ Primeiro cria o cfg:
+    cfg = {
+      questions: [...questions],
+      maxQuestions: mq,
+      difficulty: diffSel.value
+    };
+
+    // 2️⃣ Agora sim você pode calcular "needed":
+    const needed = cfg.maxQuestions - cfg.questions.length;
+    if (needed > 0) {
+      for (let i = 0; i < needed; i++) {
+        cfg.questions.push(generateAutoQuestion(cfg.difficulty));
+      }
+    }
+
+    // 3️⃣ Depois começa o jogo:
+    document.getElementById('game-personalizado').classList.remove('hidden');
+    document.getElementById('start-custom').disabled = true;
+
+    questionCount = 0;
+    startQuestion();
+};
+
+function restartGame() {
+  // Sistema de dica bônus
+  const adubo = parseInt(localStorage.getItem('adubo') || '0');
+  if (adubo >= 5) {
+    freeHints++;
+    alert('🎁 Você ganhou 1 dica grátis por jogar o jogo da fazenda!');
+  }
+
+  location.reload(); // Recarrega a página
+}
+
+
+  // Formatar MM:SS
+  function formatTime(sec) {
+    const m = String(Math.floor(sec/60)).padStart(2,'0');
+    const s = String(sec%60).padStart(2,'0');
+    return `${m}:${s}`;
+  }
+
+  // Iniciar temporizador
+  function startTimer() {
+    clearInterval(timerInterval);
+    clearTimeout(timerTimeout);
+    let maxTime = cfg.difficulty === 'easy'   ? 180
+                : cfg.difficulty === 'medium' ? 100
+                : cfg.difficulty === 'hard'   ? 50
+                : /* impossible */            30;
+    document.getElementById('time').textContent = formatTime(maxTime);
+    let rem = maxTime;
+    timerInterval = setInterval(() => {
+      rem--;
+      document.getElementById('time').textContent = formatTime(rem);
+      if (rem <= 0) clearInterval(timerInterval);
+    }, 1000);
+    timerTimeout = setTimeout(() => handleAnswer(null, '__TIME_UP__'), maxTime*1000);
+  }
+
+  // Iniciar próxima pergunta
+  function startQuestion() {
+    questionCount++;
+    const qObj = cfg.questions[(questionCount-1) % cfg.questions.length];
+    document.getElementById('question').textContent =
+      `Pergunta ${questionCount}: ${qObj.expr} = ?`;
+
+    const choicesEl = document.querySelector('.choices');
+    choicesEl.innerHTML = '';
+    const correct = qObj.answer;
+    const variants = new Set([correct]);
+    while (variants.size < 4) {
+      variants.add(correct + (Math.random()<0.5 ? -1 : 1)*(Math.floor(Math.random()*3)+1));
+    }
+    Array.from(variants).sort(() => Math.random()-0.5)
+      .forEach(v => {
+        const btn = document.createElement('button');
+        btn.textContent = v;
+        btn.onclick = () => handleAnswer(v, correct);
+        choicesEl.appendChild(btn);
+      });
+
+    startTimer();
+  }
+
+  function generateAutoQuestion(diff) {
+  // 1) Determina quantos operadores vamos ter:
+  let minOps = diff === 'impossible' ? 3
+             : diff === 'hard'       ? 2
+             : diff === 'medium'     ? 1
+             : /* easy */             0;  // Modo fácil começa com 0 operadores
+
+  let maxOps = diff === 'impossible' ? 4
+             : diff === 'hard'       ? 3
+             : diff === 'medium'     ? 2
+             : /* easy */             1;  // Modo fácil permite no máximo 1 operador
+
+  // Ajuste para o modo fácil (80% chance de 1 operador e 20% de 0 operadores)
+  const nOps = diff === 'easy'
+    ? (Math.random() < 0.8 ? 1 : 0)  // 80% chance de 1 operador, 20% de 0 operadores
+    : minOps + Math.floor(Math.random() * (maxOps - minOps + 1));
+
+  // 2) Define o pool de operadores
+  const opsPool = diff === 'impossible'
+    ? ['+', '-', '*', '/', '√']
+    : ['+', '-', '*', '/'];
+
+  // 3) Monta a expressão explicitamente
+  //    Vai ser algo como: [Term, Op, Term, Op, Term, ...]
+  const parts = [];
+  for (let i = 0; i < nOps + 1; i++) {
+    // TERM: pode ser número ou raiz (só em impossible)
+    if (diff === 'impossible' && Math.random() < 0.3) {
+      // insere raiz
+      parts.push('√');
+      parts.push(randomInt(1, 20));
+    } else {
+      // só número
+      parts.push(randomInt(1, 20));
+    }
+    // se não for o último termo, adiciona um operador
+    if (i < nOps) {
+      // escolhe um operador, mas raiz não faz sentido aqui
+      let op;
+      if (diff === 'impossible') {
+        // pool sem raiz para operadores
+        const pool = ['+', '-', '*', '/'];
+        op = pool[Math.floor(Math.random() * pool.length)];
+      } else {
+        op = opsPool[Math.floor(Math.random() * opsPool.length)];
+      }
+      parts.push(op);
+    }
+  }
+
+  // 4) Transforma em duas strings: uma para mostrar (exprPlayer) e outra para avaliar (exprMachine)
+  let exprPlayer = '';
+  let exprMachine = '';
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] === '√') {
+      exprPlayer  += `√${parts[i+1]}`;
+      exprMachine += `Math.sqrt(${parts[i+1]})`;
+      i++; // pula o número já tratado
+    } else {
+      exprPlayer  += parts[i];
+      exprMachine += parts[i];
+    }
+  }
+
+  console.log('Impossible expr:', exprMachine);
+
+  // 5) Avalia com segurança
+  let correct;
+  try {
+    correct = Math.round(eval(exprMachine));
+    if (isNaN(correct)) throw new Error('NaN');
+  } catch {
+    // fallback: se der pau, geramos uma operação simples
+    correct = randomInt(1, 10);
+    exprPlayer  = String(correct);
+    exprMachine = String(correct);
+  }
+
+  return { expr: exprPlayer, answer: correct };
+}
+
+
+
+
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+
+  // Tratar resposta
+  function handleAnswer(given, correct) {
+    clearInterval(timerInterval);
+    clearTimeout(timerTimeout);
+    if (given == correct) {
+      if (questionCount < cfg.maxQuestions) {
+        alert('✔️ Certo!');
+        startQuestion();
+      } else {
+        alert('🎉 Você terminou o modo personalizado!');
+        document.getElementById('restart-button').style.display = 'inline-block';
+      }
+    } else {
+      alert('❌ Errado...');
+      document.getElementById('restart-button').style.display = 'inline-block';
+    }
+  }
+
+})();
+</script>
+</body>
+</html>

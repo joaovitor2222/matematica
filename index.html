@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Math Horror Game</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #111; color: #eee; }
+    .hidden { display: none; }
+    #question { margin: 20px 0; font-size: 1.5em; }
+    .choices button { margin: 5px; padding: 10px 20px; font-size: 1em; }
+    #scare-overlay {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: flex; justify-content: center; align-items: center;
+      flex-direction: column; color: white;
+      z-index: 999; visibility: hidden;
+    }
+    #scare-overlay img { max-width: 80%; max-height: 80%; }
+
+    #timer-display {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: #f55;
+}
+
+body {
+  font-family: sans-serif;
+  text-align: center;
+  background: #111;
+  color: #eee;
+  position: relative;
+}
+
+#classificacao {
+  position: fixed;
+  bottom: 20px; /* Distância de 20px do fundo da tela */
+  left: 50%;
+  transform: translateX(-50%); /* Centraliza a logo horizontalmente */
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#classificacao img {
+  width: 70px; /* Tamanho médio da logo */
+  margin-right: 10px; /* Espaço entre a imagem e o texto */
+  opacity: 0.7; /* Um toque de transparência para não interferir muito com o conteúdo */
+}
+
+#classificacao p {
+  font-size: 0.9em;
+  color: #fff;
+  opacity: 0.8;
+  margin: 0;
+  text-align: center; /* Alinha o texto ao centro */
+}
+
+    /* Botão de jogar novamente */
+    #restart-button {
+      display: none; /* Inicialmente escondido */
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 30px;
+      font-size: 1.2em;
+      background-color: #ff3b3b;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1000; /* Garantir que o botão apareça acima da imagem */
+    }
+
+    #restart-button:hover {
+      background-color: #e60000;
+    }
+
+
+    #video-button {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #007bff; /* azul */
+  color: white;
+  padding: 15px 25px;
+  font-size: 1.2em;
+  text-decoration: none;
+  border-radius: 8px;
+  z-index: 1001;
+}
+
+#video-button:hover {
+  background-color: #0056b3;
+}
+
+#build-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #007bff;
+  padding: 10px;
+  border-radius: 50%;
+  display: flex;              /* <-- esta regra vencia .hidden */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  opacity: 0.8;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+#build-button.hidden {
+  display: none;             /* <-- override da .hidden só para este botão */
+}
+
+#build-button:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+#build-button img {
+  width: 40px;
+  height: 40px;
+}
+
+#simbolos-aviso {
+  font-size: 0.9em;
+  margin-top: 20px;
+  color: #ccc;
+  opacity: 0.8;
+}
+
+
+  </style>
+</head>
+<body>
+
+  <!-- 1. Escolha de dificuldade -->
+  <div id="difficulty-screen">
+    <h1>Escolha a dificuldade</h1>
+    <button data-diff="easy">Fácil</button>
+    <button data-diff="medium">Médio</button>
+    <button data-diff="hard">Difícil</button>
+    <p id="timer">Selecionando médio em <span id="count">15</span>s...</p>
+  </div>
+
+  <div id="timer-display">Tempo restante: <span id="time">00:00</span></div>
+
+
+  <!-- 2. Jogo -->
+  <div id="game-screen" class="hidden">
+    <div id="question"></div>
+    <div class="choices"></div>
+  </div>
+
+  <!-- 3. Overlay de susto -->
+  <div id="scare-overlay">
+    <img src="https://wallpapers.com/images/hd/scary-face-pictures-fvx05bim45ctjiwh.jpg" alt="Boo!" />
+    <audio id="scare-audio" src="audio/susto.mp3" preload="auto"></audio>
+  </div>
+
+  <div id="classificacao">
+    <img src="https://logodownload.org/wp-content/uploads/2017/07/classificacao-10-anos-logo-1.png" alt="Classificação Indicativa 10 anos">
+    <p>Menores de 10 anos só podem jogar se tiverem costume com games de terror como FNAF, Poppy Playtime, etc.</p>
+  </div>
+  
+  <button id="restart-button" onclick="restartGame()">Jogar Novamente</button>
+  <!-- Botão de vídeo: inicialmente oculto -->
+<a id="video-button" 
+href="https://www.youtube.com/watch?v=vaxIVROYg74" 
+target="_blank"
+class="hidden">
+Ver vídeo de vitória!
+</a>
+
+<a id="build-button" class="hidden" href="personalizado.html">
+  <img src="https://images.icon-icons.com/1770/PNG/512/4137155-building-construction-industry-wrench_114072.png" alt="Construir">
+</a>
+
+
+<p id="simbolos-aviso">
+  Atenção: <br>
+  + é soma, - é subtração, <br>
+  * é multiplicação e / é divisão.
+</p>
+
+
+
+<script>
+
+    function restartGame() {
+    location.reload(); // Recarrega a página e reinicia o jogo
+  }
+  
+(() => {
+  const diffScreen = document.getElementById('difficulty-screen');
+  const gameScreen = document.getElementById('game-screen');
+  const timerEl = document.getElementById('count');
+  const restartButton = document.getElementById('restart-button');
+  const buttons = diffScreen.querySelectorAll('button');
+  let countdown, difficulty = 'medium';
+  let timerInterval, timerTimeout;
+  let isGameStarted = false;  // Variável para garantir que o jogo não seja iniciado mais de uma vez.
+  let easyCleared = localStorage.getItem('easyCleared') === 'true';
+let mediumCleared = localStorage.getItem('mediumCleared') === 'true';
+let hardCleared = localStorage.getItem('hardCleared') === 'true';
+  let zerado = false; // essa será a variável principal
+  let freeHints = 0;
+
+
+
+  // Timeout de 15s para escolher, senão médio
+  let timeLeft = 15;
+  countdown = setInterval(() => {
+    timeLeft--;
+    timerEl.textContent = timeLeft;
+    if (timeLeft <= 0) {
+      startGame('medium');
+    }
+  }, 1000);
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      clearInterval(countdown);
+      startGame(btn.dataset.diff);
+    });
+  });
+
+  // ===== FUNÇÕES DO JOGO =====
+  let questionCount = 0;
+  const maxQuestions = 12;
+
+  function startGame(chosen) {
+  if (isGameStarted) return;  // Se o jogo já foi iniciado, não faça nada
+  isGameStarted = true;  // Marca que o jogo foi iniciado.
+
+  difficulty = chosen;
+
+  // Desabilitar todos os botões pra impedir mais cliques
+  buttons.forEach(btn => btn.disabled = true);
+
+  diffScreen.classList.add('hidden');
+  gameScreen.classList.remove('hidden');
+  generateQuestion();
+}
+
+
+  // converte segundos num formato MM:SS
+function formatTime(sec) {
+  const m = String(Math.floor(sec / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function restartGame() {
+  // Sistema de dica bônus
+  const adubo = parseInt(localStorage.getItem('adubo') || '0');
+  if (adubo >= 5) {
+    freeHints++;
+    alert('🎁 Você ganhou 1 dica grátis por jogar o jogo da fazenda!');
+  }
+
+  location.reload(); // Recarrega a página
+}
+
+
+// inicia o timer para cada pergunta
+function startQuestionTimer() {
+  clearQuestionTimer();
+
+  // define o tempo máximo em segundos de acordo com a dificuldade
+  let maxTime = difficulty === 'easy'   ? 180  // 3 min = 180s
+              : difficulty === 'medium' ? 100  // 1m40s = 100s
+              : /* hard */                50;  // 50s
+
+  // atualiza imediatamente o display
+  document.getElementById('time').textContent = formatTime(maxTime);
+
+  // a cada segundo decrementa e atualiza o display...
+  let remaining = maxTime;
+  timerInterval = setInterval(() => {
+    remaining--;
+    document.getElementById('time').textContent = formatTime(remaining);
+    if (remaining <= 0) clearInterval(timerInterval);
+  }, 1000);
+
+  // ... e quando o tempo acabar, conta como erro
+  timerTimeout = setTimeout(() => {
+    handleAnswer(null, /* forçando errado */ '__TIME_UP__');
+  }, maxTime * 1000);
+}
+
+// limpa qualquer timer anterior
+function clearQuestionTimer() {
+  clearInterval(timerInterval);
+  clearTimeout(timerTimeout);
+}
+
+let buildClicks = 0; // contador de cliques no botão de construir
+
+function showBuildButton() {
+  const buildBtn = document.getElementById('build-button');
+  buildBtn.classList.remove('hidden');
+
+  let buildClicks = 0;
+  buildBtn.addEventListener('click', (e) => {
+    e.preventDefault(); // Impede o redirecionamento automático
+    buildClicks++;
+    if (buildClicks >= 3) {
+      window.location.href = buildBtn.href;
+    }
+  });
+}
+
+
+
+  function generateQuestion() {
+  questionCount++;
+  // Define operação e número de alternativas
+  let ops, numChoices;
+  if (difficulty === 'easy') {
+    if (questionCount <= 3) ops = ['+'];
+    else if (questionCount <= 6) ops = ['-'];
+    else if (questionCount <= 9) ops = ['*'];
+    else ops = ['/'];
+    numChoices = (questionCount <= 2 ? 2 : questionCount <= 5 ? 3 : 4);
+  }
+  else if (difficulty === 'medium') {
+    if (questionCount <= 3) ops = Math.random() < 0.2 ? ['+', '-'] : ['+'];
+    else if (questionCount <= 8) ops = ['*', '/'];
+    else ops = ['+', '-', '*', '/'];
+    numChoices = 4;
+  }
+  else { // hard
+    ops = ['+', '-', '*', '/'];
+    numChoices = 4;
+  }
+
+  // Gera expressão
+  const expr = makeExpression(ops, difficulty);
+  const correct = Math.round(eval(expr)); // força resposta inteira
+  // Gera alternativas: sempre inclui a certa + fakes
+  const choices = makeChoices(correct, numChoices, difficulty);
+
+  // Renderiza
+  const qEl = document.getElementById('question');
+  const cEl = document.querySelector('.choices');
+  qEl.textContent = `Pergunta ${questionCount}: ${expr} = ?`;
+  cEl.innerHTML = '';
+  choices.forEach(val => {
+    const btn = document.createElement('button');
+    btn.textContent = val;
+    btn.addEventListener('click', () => handleAnswer(val, correct));
+    cEl.appendChild(btn);
+  });
+
+  // Inicia o cronômetro para essa pergunta
+  startQuestionTimer();
+}
+
+
+  function makeExpression(ops, diff) {
+    // Cria expressão de acordo com dificuldade
+    // hard pode ter 3 operadores; easy e medium só 1
+    const nOps = (diff==='hard' ? Math.floor(Math.random()*2)+1 : 1);
+    let nums = [], symbols = [];
+    for (let i=0;i<nOps+1;i++){
+      nums.push(Math.floor(Math.random()*20)+1);
+      if (i<nOps) symbols.push(ops[Math.floor(Math.random()*ops.length)]);
+    }
+    // Retorna algo como "3+5*2"
+    return nums.reduce((acc, n, i)=> i? acc + symbols[i-1] + n : ''+n, '');
+  }
+
+  function makeChoices(correct, n, diff) {
+    const set = new Set([Math.round(correct)]);
+    while (set.size < n) {
+      let fake;
+      if ((diff!=='easy' && diff!=='medium') || (diff==='medium' && Math.random()<0.5) || diff==='hard') {
+        // troll: sempre próximo ou distante
+        fake = correct + (Math.random()<0.5 ? -1 : 1)* (Math.floor(Math.random()*3)+1);
+      } else {
+        fake = Math.floor(Math.random()*40);
+      }
+      set.add(Math.round(fake));
+    }
+    return Array.from(set).sort((a,b)=>Math.random()-0.5);
+  }
+
+
+
+  function handleAnswer(given, correct) {
+  clearQuestionTimer();  // Cancela o timeout e o intervalo do cronômetro
+  if (given == correct) {
+    if (questionCount < maxQuestions) {
+      alert('✔️ Certo!');
+      generateQuestion();
+    } else {
+    // Vitória: antes havia apenas alert + restart
+    setTimeout(() => {
+  let difText = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  alert(`🎉 Parabéns! Você venceu o jogo de terror matemático na dificuldade ${difText}!`);
+  
+  restartButton.style.display = 'block';
+  const videoBtn = document.getElementById('video-button');
+  videoBtn.classList.remove('hidden');
+
+  // Marcar a dificuldade como vencida
+  if (difficulty === 'easy') {
+  easyCleared = true;
+  localStorage.setItem('easyCleared', 'true');
+}
+if (difficulty === 'medium') {
+  mediumCleared = true;
+  localStorage.setItem('mediumCleared', 'true');
+}
+if (difficulty === 'hard') {
+  hardCleared = true;
+  localStorage.setItem('hardCleared', 'true');
+}
+
+  // Verificar se zerou tudo
+  if (easyCleared && mediumCleared && hardCleared) {
+    zerado = true;
+    showBuildButton(); // função para exibir botão de construir
+  }
+
+}, 100);
+
+
+  }
+  } else {
+    alert('❌ Errado...');
+    setTimeout(() => {
+      const overlay = document.getElementById('scare-overlay');
+      const audio  = document.getElementById('scare-audio');
+      overlay.style.visibility = 'visible';
+      audio.currentTime = 0;
+      audio.play();
+      restartButton.style.display = 'block'; // Exibe o botão "Jogar Novamente"
+    }, 3000);
+  }
+}
+})();
+</script>
+</body>
+</html>
