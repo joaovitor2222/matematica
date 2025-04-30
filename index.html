@@ -431,6 +431,7 @@ rewardBtn.addEventListener('click', () => {
   }
 
   if (val === correctCode) {
+    alert('Parabéns! Código aceito. Você ganhou +1 dica.');
     freeHints = (freeHints || 0) + 1;
     sessionStorage.setItem(rewardKey, 'true');
     rewardMsg.textContent = '✅ Código aceito! Você ganhou +1 dica.';
