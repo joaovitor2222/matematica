@@ -268,12 +268,13 @@ Ver vídeo de vitória!
 </div>
 
 
-<div style="margin-top: 50px;">
+<div id="reward-section" style="margin-top: 50px;">
   <h3>Tem um código de recompensa?</h3>
   <input type="text" id="reward-code-input" placeholder="Digite o código aqui">
-  <button onclick="verificarCodigo()">Enviar</button>
-  <p id="reward-message" style="color: lightgreen;"></p>
+  <button id="reward-code-btn">Enviar</button>
+  <p id="reward-msg" style="color: lightgreen;"></p>
 </div>
+
 
 
 <script>
@@ -300,12 +301,13 @@ let hardCleared = localStorage.getItem('hardCleared') === 'true';
 const adubo = parseInt(localStorage.getItem('adubo') || '0');
 const rewardKey = 'usedRewardCode';
 const correctCode = 'xvvjz';
-const rewardInput = document.getElementById('reward-code-input');
-const rewardBtn = document.getElementById('reward-code-btn');
-const rewardMsg = document.getElementById('reward-msg');
+const rewardSection = document.getElementById('reward-section');
+const rewardInput   = document.getElementById('reward-code-input');
+const rewardBtn     = document.getElementById('reward-code-btn');
+const rewardMsg     = document.getElementById('reward-msg');
 
-  if (sessionStorage.getItem(rewardKey) === 'true') {
-  document.getElementById('reward-section').style.display = 'none';
+if (sessionStorage.getItem(rewardKey) === 'true') {
+  rewardSection.style.display = 'none';
 }
   
 if (adubo >= 5) {
@@ -431,11 +433,11 @@ rewardBtn.addEventListener('click', () => {
   if (val === correctCode) {
     freeHints = (freeHints || 0) + 1;
     sessionStorage.setItem(rewardKey, 'true');
-    rewardMsg.textContent = 'Código aceito! Você ganhou +1 dica.';
+    rewardMsg.textContent = '✅ Código aceito! Você ganhou +1 dica.';
     document.getElementById('hint-button').classList.remove('hidden');
-    setTimeout(() => document.getElementById('reward-section').style.display = 'none', 3000);
+    setTimeout(() => rewardSection.style.display = 'none', 3000);
   } else {
-    rewardMsg.textContent = 'Código inválido.';
+    rewardMsg.textContent = '❌ Código inválido.';
   }
 });
 
